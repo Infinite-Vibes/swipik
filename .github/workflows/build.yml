@@ -1,0 +1,44 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Write .env
+        run: echo "VITE_DROPBOX_APP_KEY=${{ secrets.VITE_DROPBOX_APP_KEY }}" > .env
+        shell: bash
+      - run: npm run electron:build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Swipik-Windows
+          path: release/*.exe
+          retention-days: 30
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Write .env
+        run: echo "VITE_DROPBOX_APP_KEY=${{ secrets.VITE_DROPBOX_APP_KEY }}" > .env
+      - run: npm run electron:build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Swipik-macOS
+          path: release/*.dmg
+          retention-days: 30
