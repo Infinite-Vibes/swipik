@@ -23,10 +23,7 @@ const ext = n => n.split('.').pop()?.toLowerCase() ?? ''
  * Instead we read well-known paths.  For the first version we default to
  * the DCIM/Camera folder; a future version can use SAF via a native plugin.
  */
-export async function pickFolderAndroid() {
-  // Default to DCIM/Camera — the most common media location.
-  // You can add more paths (Downloads, Pictures, etc.) here later.
-  const path = 'DCIM/Camera'
+export async function pickFolderAndroid(path = 'DCIM/Camera') {
   return { _androidFolder: path, _androidDirectory: Directory.ExternalStorage }
 }
 

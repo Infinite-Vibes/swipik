@@ -15,10 +15,9 @@ async function generateChallenge(verifier) {
 }
 
 function redirectUri() {
-  if (EXPLICIT_REDIRECT) return EXPLICIT_REDIRECT
-  // Both Electron and Android use the custom URL scheme — OS routes the callback back into the app
+  // Custom URL scheme takes priority on native platforms regardless of EXPLICIT_REDIRECT
   if (window.electronAPI || window.Capacitor?.getPlatform() === 'android') return 'com.swipik.app://auth'
-  return 'http://localhost:5299/swipik.html'
+  return EXPLICIT_REDIRECT || 'http://localhost:5299/swipik.html'
 }
 
 export const hasAppKey = () => !!APP_KEY
@@ -67,16 +66,31 @@ export async function startDropboxAuth() {
     const { Browser } = await import('@capacitor/browser')
     const { App }     = await import('@capacitor/app')
     await new Promise((resolve, reject) => {
-      const sub = App.addListener('appUrlOpen', async ({ url }) => {
-        sub.then(h => h.remove())
+      let done = false
+
+      const urlSub = App.addListener('appUrlOpen', async ({ url }) => {
+        if (done) return
+        done = true
+        urlSub.then(h => h.remove())
+        closeSub.then(h => h.remove())
         await Browser.close().catch(() => {})
-        const code = new URL(url).searchParams.get('code')
+        const code  = new URL(url).searchParams.get('code')
         const error = new URL(url).searchParams.get('error')
         if (error) { reject(Object.assign(new Error(`Dropbox: ${error}`), { name: 'AbortError' })); return }
-        if (!code) { reject(new Error('No code in callback URL')); return }
+        if (!code)  { reject(new Error('No code in callback URL')); return }
         await _exchangeCode(code)
         resolve()
       })
+
+      // Reject if user closes the tab without completing auth
+      const closeSub = Browser.addListener('browserFinished', () => {
+        if (done) return
+        done = true
+        urlSub.then(h => h.remove())
+        closeSub.then(h => h.remove())
+        reject(Object.assign(new Error('Auth cancelled'), { name: 'AbortError' }))
+      })
+
       Browser.open({ url: authUrl, presentationStyle: 'popover' }).catch(reject)
     })
   } else {

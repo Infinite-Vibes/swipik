@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { isAuthed, startDropboxAuth, handleCallback, listFolder, logout } from '../lib/dropbox.js'
 import { isMedia, isVideo } from '../lib/localFs.js'
+
+const isAndroid = window.Capacitor?.getPlatform() === 'android'
 
 export default function DropboxPicker({ onFiles, onBack }) {
   const [authed, setAuthed] = useState(isAuthed)
@@ -11,6 +13,7 @@ export default function DropboxPicker({ onFiles, onBack }) {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
   const [connecting, setConnecting] = useState(false)
+  const authStarted = useRef(false)
 
   // Browser OAuth callback: ?code= on mount
   useEffect(() => {
@@ -18,6 +21,14 @@ export default function DropboxPicker({ onFiles, onBack }) {
       handleCallback().then(ok => { if (ok) setAuthed(true) })
     }
   }, [])
+
+  // Android: skip the "Connect Dropbox" tap — open auth immediately
+  useEffect(() => {
+    if (!authed && isAndroid && !authStarted.current) {
+      authStarted.current = true
+      handleConnect()
+    }
+  }, []) // eslint-disable-line
 
   // Load folder whenever authed or path changes
   useEffect(() => {

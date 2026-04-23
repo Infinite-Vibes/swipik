@@ -21,7 +21,7 @@ export function isLocalSupported() {
 }
 
 // ── pickFolder ──────────────────────────────────────────────────────────────
-export async function pickFolder() {
+export async function pickFolder(androidPath) {
   if (IS_ELECTRON()) {
     const folderPath = await window.electronAPI.pickFolder()
     if (!folderPath) throw Object.assign(new Error('Cancelled'), { name: 'AbortError' })
@@ -30,7 +30,7 @@ export async function pickFolder() {
 
   if (IS_ANDROID()) {
     const { pickFolderAndroid } = await import('./androidFs.js')
-    return pickFolderAndroid()
+    return pickFolderAndroid(androidPath)
   }
 
   if (!('showDirectoryPicker' in window)) {
