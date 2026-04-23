@@ -25,7 +25,10 @@ export default function FolderPicker({ onFiles, onDropbox, onBack }) {
     }
   }
 
-  useEffect(() => { pick() }, []) // eslint-disable-line
+  // On desktop, auto-open the system folder dialog immediately.
+  // On Android there's no dialog — show the button screen so user can choose Dropbox.
+  const isAndroid = window.Capacitor?.getPlatform() === 'android'
+  useEffect(() => { if (!isAndroid) pick() }, []) // eslint-disable-line
 
   return (
     <div className="screen">
