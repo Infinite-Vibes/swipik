@@ -15,7 +15,10 @@ async function generateChallenge(verifier) {
 }
 
 function redirectUri() {
-  return EXPLICIT_REDIRECT || 'http://localhost:5299/swipik.html'
+  if (EXPLICIT_REDIRECT) return EXPLICIT_REDIRECT
+  // Capacitor/Android WebView serves the app at http://localhost (no port)
+  if (window.Capacitor?.getPlatform() === 'android') return 'http://localhost/swipik.html'
+  return 'http://localhost:5299/swipik.html'
 }
 
 export const hasAppKey = () => !!APP_KEY

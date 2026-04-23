@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "electron:dev": "concurrently -k \"vite\" \"electron .\"",
     "electron:build": "npm run clean && vite build && electron-builder",
-    "android:sync": "vite build && node -e \"require('fs').copyFileSync('dist/swipik.html','dist/index.html')\" && npx cap sync android",
+    "android:sync": "npm run build && node -e \"require('fs').copyFileSync('dist/swipik.html','dist/index.html')\" && npx cap sync android",
     "android:open": "npx cap open android",
     "android:run": "npm run android:sync && npx cap open android"
   },

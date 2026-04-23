@@ -53,11 +53,13 @@ export default function FolderPicker({ onFiles, onDropbox, onBack }) {
         <>
           <p className="mode-subtitle">Choose a source.</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%', maxWidth: 320 }}>
-            <button className="btn btn-primary"    onClick={pick}>Pick local folder</button>
-            {showDropbox && (
-              <button className="btn btn-secondary" onClick={onDropbox}>Browse Dropbox</button>
+            {!isAndroid && (
+              <button className="btn btn-primary" onClick={pick}>Pick local folder</button>
             )}
-            <button className="btn btn-outline"    onClick={onBack}>← Back</button>
+            {showDropbox && (
+              <button className="btn btn-primary" onClick={onDropbox}>Browse Dropbox</button>
+            )}
+            <button className="btn btn-outline" onClick={onBack}>← Back</button>
           </div>
         </>
       )}
