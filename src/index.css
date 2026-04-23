@@ -224,9 +224,8 @@ body::after {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  /* overflow: visible so the card can fly off toward the viewport edge.
-     The root html/body/# root overflow:hidden clips at the window boundary. */
+  justify-content: flex-end; /* card anchored toward bottom, top bar floats above */
+  padding-bottom: 4px;
   overflow: visible;
 }
 
@@ -305,16 +304,14 @@ body::after {
 /* ── Card ── */
 .card-wrap {
   position: relative;
-  /* 84vw → ~8vw gutter each side for YES/NO hints
-     74vh → ~13vh strip top/bottom for FAVOURITE/SKIP hints */
-  width: min(84vw, 1280px);
-  height: min(74vh, 960px);
+  /* Fill the screen — hints live inside the card now */
+  width: min(98vw, 1280px);
+  height: calc(100% - 56px); /* leave 56px for top bar (exit + counter) */
   will-change: transform;
   cursor: grab;
+  touch-action: none; /* prevent Android WebView scroll hijack so pointer events fire */
   animation: cardIn 0.28s cubic-bezier(.25,.46,.45,.94);
-  /* no fill-mode — the 'both' keyword keeps the animation active in the CSS cascade
-     after it finishes, which overrides any subsequent transitions on the same props */
-  /* Ensure card stays above the hint layer */
+  /* no fill-mode — keeps CSS cascade clean after animation finishes */
   z-index: 2;
 }
 .card-wrap:active { cursor: grabbing; }
@@ -410,50 +407,50 @@ body::after {
   text-transform: uppercase;
 }
 
-/* ── Edge Hints ── */
-/* Lives as a sibling of .card-wrap, covering the full .sorter area.
-   Hints are positioned in the gutters around the card, never on top of it. */
-.edge-hints {
+/* ── In-card Direction Hints ── */
+/* Positioned inside .card-wrap so they're always on the image regardless of card size */
+.card-hints {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 1;
+  z-index: 3; /* above the card */
 }
-.hint {
+
+.card-hint {
   position: absolute;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  font-size: 0.72rem;
+  gap: 3px;
+  opacity: 0.22;
+  transition: opacity 0.15s, transform 0.15s;
+  pointer-events: none;
+}
+.card-hint-emoji {
+  font-size: 1.8rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.7));
+}
+.card-hint-label {
+  font-size: 0.6rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  opacity: 0.55;
-  transition: opacity 0.18s, transform 0.18s;
-  text-shadow: 0 1px 8px rgba(0,0,0,0.7);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.8);
 }
-.hint.active {
-  opacity: 1;
-  transform: translateY(-50%) scale(1.15); /* left/right get this override below */
-}
-.hint-emoji { font-size: 2.6rem; line-height: 1; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5)); }
 
-/* Left/right — in the side gutters (card is 84vw, so ~8vw free on each side) */
-.hint-right { right: 22px;  top: 50%; transform: translateY(-50%);  color: var(--good); }
-.hint-left  { left: 22px;   top: 50%; transform: translateY(-50%);  color: var(--bad);  }
+/* Positions */
+.card-hint-right { right: 14px; top: 50%; transform: translateY(-50%); color: var(--good); }
+.card-hint-left  { left: 14px;  top: 50%; transform: translateY(-50%); color: var(--bad);  }
+.card-hint-up    { top: 14px;   left: 50%; transform: translateX(-50%); color: var(--fave); }
+.card-hint-down  { bottom: 14px; left: 50%; transform: translateX(-50%); color: var(--skip); }
 
-/* Up/down — top and bottom strips outside the card.
-   hint-up sits in the same horizontal band as exit/counter (both are corner-pinned,
-   so the centred hint doesn't clash). hint-down in the bottom strip. */
-.hint-up   { top: 22px;    left: 50%; transform: translateX(-50%); color: var(--fave); }
-.hint-down { bottom: 22px; left: 50%; transform: translateX(-50%); color: var(--skip); }
-
-/* Active: scale up in place without breaking the base transform */
-.hint-right.active { transform: translateY(-50%) scale(1.18); }
-.hint-left.active  { transform: translateY(-50%) scale(1.18); }
-.hint-up.active    { transform: translateX(-50%) scale(1.18); opacity: 1; }
-.hint-down.active  { transform: translateX(-50%) scale(1.18); opacity: 1; }
+/* Active — bright and scaled */
+.card-hint.active { opacity: 0.92; }
+.card-hint-right.active { transform: translateY(-50%) scale(1.18); }
+.card-hint-left.active  { transform: translateY(-50%) scale(1.18); }
+.card-hint-up.active    { transform: translateX(-50%) scale(1.18); }
+.card-hint-down.active  { transform: translateX(-50%) scale(1.18); }
 
 /* ── Rater ── */
 .rater-controls {

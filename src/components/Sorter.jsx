@@ -227,16 +227,6 @@ export default function Sorter({ files, mode, dirHandle, dropboxPath, onDone, on
         {skippedCount > 0 && <div className="progress-skipped">{skippedCount} skipped</div>}
       </div>
 
-      {/* Edge hints — sibling of card-wrap so they sit in the surrounding space, not on the card */}
-      <div className="edge-hints">
-        {Object.entries(ACTIONS).map(([dir, a]) => (
-          <div key={dir} className={`hint hint-${dir} ${activeDir === dir ? 'active' : ''}`}>
-            <span className="hint-emoji">{a.emoji}</span>
-            <span>{a.label.toUpperCase()}</span>
-          </div>
-        ))}
-      </div>
-
       {currentFile && (
         <div
           className="card-wrap"
@@ -270,6 +260,16 @@ export default function Sorter({ files, mode, dirHandle, dropboxPath, onDone, on
                 <span className="card-overlay-label" style={{ color: ACTIONS[activeDir].color }}>{ACTIONS[activeDir].label}</span>
               </div>
             )}
+          </div>
+
+          {/* Direction hints — inside card-wrap, overlaid on the image */}
+          <div className="card-hints">
+            {Object.entries(ACTIONS).map(([dir, a]) => (
+              <div key={dir} className={`card-hint card-hint-${dir}${activeDir === dir ? ' active' : ''}`}>
+                <span className="card-hint-emoji">{a.emoji}</span>
+                {activeDir === dir && <span className="card-hint-label">{a.label}</span>}
+              </div>
+            ))}
           </div>
         </div>
       )}
