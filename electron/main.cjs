@@ -10,6 +10,16 @@ protocol.registerSchemesAsPrivileged([{
   privileges: { secure: true, supportFetchAPI: true, stream: true },
 }])
 
+// Register com.swipik.app:// so the OS routes Dropbox OAuth callbacks back here
+app.setAsDefaultProtocolClient('com.swipik.app')
+
+// macOS: OS delivers the callback URL via open-url event (app already running)
+app.on('open-url', (event, url) => {
+  event.preventDefault()
+  const win = BrowserWindow.getAllWindows()[0]
+  if (win) win.webContents.send('auth-callback', url)
+})
+
 // ffmpeg binary — unpacked from asar in packaged builds
 let ffmpegBin
 try {
@@ -195,6 +205,20 @@ function createWindow() {
   } else {
     win.loadFile(path.join(__dirname, '../dist/swipik.html'))
   }
+}
+
+// Windows: second instance launched with the callback URL as argv
+const gotLock = app.requestSingleInstanceLock()
+if (!gotLock) {
+  app.quit()
+} else {
+  app.on('second-instance', (_event, argv) => {
+    const url = argv.find(a => a.startsWith('com.swipik.app://'))
+    if (url) {
+      const win = BrowserWindow.getAllWindows()[0]
+      if (win) { win.focus(); win.webContents.send('auth-callback', url) }
+    }
+  })
 }
 
 app.whenReady().then(() => {

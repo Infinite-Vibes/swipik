@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openExternal:      (url)                                    => ipcRenderer.invoke('open-external', url),
   // Dropbox OAuth
   dropboxAuthStart:  (authUrl)                                => ipcRenderer.invoke('dropbox-auth-start', authUrl),
+  onAuthCallback:    (cb)                                     => ipcRenderer.on('auth-callback', (_e, url) => cb(url)),
   // Platform info
   platform:          process.platform,
 })

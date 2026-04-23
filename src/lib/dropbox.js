@@ -16,8 +16,8 @@ async function generateChallenge(verifier) {
 
 function redirectUri() {
   if (EXPLICIT_REDIRECT) return EXPLICIT_REDIRECT
-  // Android uses a custom URL scheme so the OS routes the callback back into the app
-  if (window.Capacitor?.getPlatform() === 'android') return 'com.swipik.app://auth'
+  // Both Electron and Android use the custom URL scheme — OS routes the callback back into the app
+  if (window.electronAPI || window.Capacitor?.getPlatform() === 'android') return 'com.swipik.app://auth'
   return 'http://localhost:5299/swipik.html'
 }
 
@@ -50,9 +50,18 @@ export async function startDropboxAuth() {
   const authUrl = `https://www.dropbox.com/oauth2/authorize?${params}`
 
   if (window.electronAPI) {
-    // Electron: intercept redirect in a popup, get code here
-    const code = await window.electronAPI.dropboxAuthStart(authUrl)
-    await _exchangeCode(code)
+    // Electron: open system browser, wait for OS to route com.swipik.app://auth back
+    await new Promise((resolve, reject) => {
+      window.electronAPI.onAuthCallback(async (url) => {
+        const code  = new URL(url).searchParams.get('code')
+        const error = new URL(url).searchParams.get('error')
+        if (error) { reject(Object.assign(new Error(`Dropbox: ${error}`), { name: 'AbortError' })); return }
+        if (!code) { reject(new Error('No code in callback URL')); return }
+        await _exchangeCode(code)
+        resolve()
+      })
+      window.electronAPI.openExternal(authUrl)
+    })
   } else if (window.Capacitor?.getPlatform() === 'android') {
     // Android: open Chrome Custom Tab, wait for OS to route com.swipik.app://auth back
     const { Browser } = await import('@capacitor/browser')
