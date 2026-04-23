@@ -27,7 +27,17 @@ export async function pickFolderAndroid(path = 'DCIM/Camera') {
   return { _androidFolder: path, _androidDirectory: Directory.ExternalStorage }
 }
 
+async function ensureStoragePermission() {
+  const status = await Filesystem.checkPermissions()
+  if (status.publicStorage === 'granted') return
+  const result = await Filesystem.requestPermissions()
+  if (result.publicStorage !== 'granted') {
+    throw new Error('Storage permission denied. Please allow storage access in your phone Settings and try again.')
+  }
+}
+
 export async function listMediaFilesAndroid(dirHandle) {
+  await ensureStoragePermission()
   const { _androidFolder: folder, _androidDirectory: directory } = dirHandle
   try {
     const result = await Filesystem.readdir({ path: folder, directory })
@@ -45,7 +55,7 @@ export async function listMediaFilesAndroid(dirHandle) {
     return files.sort((a, b) => a.name.localeCompare(b.name))
   } catch (e) {
     console.error(`Failed to list files in ${folder}:`, e.message)
-    throw new Error(`Could not access ${folder}. Check permissions or try a different folder.`)
+    throw new Error(`Could not access "${folder}". Try a different folder or use Dropbox.`)
   }
 }
 

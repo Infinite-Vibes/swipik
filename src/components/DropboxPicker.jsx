@@ -4,10 +4,15 @@ import { isMedia, isVideo } from '../lib/localFs.js'
 
 const isAndroid = window.Capacitor?.getPlatform() === 'android'
 
-export default function DropboxPicker({ onFiles, onBack }) {
+export default function DropboxPicker({ onFiles, onBack, initialPath }) {
   const [authed, setAuthed] = useState(isAuthed)
-  const [path, setPath]     = useState('')
-  const [stack, setStack]   = useState([''])  // breadcrumb history
+  const [path, setPath]     = useState(initialPath || '')
+  // Pre-build breadcrumb stack from initialPath so back-navigation works correctly
+  const [stack, setStack]   = useState(() => {
+    if (!initialPath) return ['']
+    const parts = initialPath.replace(/^\//, '').split('/').filter(Boolean)
+    return ['', ...parts.map((_, i) => '/' + parts.slice(0, i + 1).join('/'))]
+  })
   const [folders, setFolders]   = useState([])
   const [mediaFiles, setMediaFiles] = useState([])
   const [loading, setLoading] = useState(false)
@@ -30,9 +35,9 @@ export default function DropboxPicker({ onFiles, onBack }) {
     }
   }, []) // eslint-disable-line
 
-  // Load folder whenever authed or path changes
+  // Load folder on auth — use initialPath if provided
   useEffect(() => {
-    if (authed) loadFolder(path)
+    if (authed) loadFolder(initialPath || '')
   }, [authed]) // eslint-disable-line
 
   async function loadFolder(folderPath) {

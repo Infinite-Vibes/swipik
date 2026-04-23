@@ -1,12 +1,22 @@
+const isAndroid = window.Capacitor?.getPlatform() === 'android'
+
+function openDropboxFolder(dropboxPath) {
+  const url = `https://www.dropbox.com/home${dropboxPath}`
+  if (window.electronAPI) {
+    window.electronAPI.openExternal(url)
+  } else if (isAndroid) {
+    // '_system' triggers Android App Links — opens Dropbox app if installed
+    window.open(url, '_system')
+  } else {
+    window.open(url, '_blank')
+  }
+}
+
 function OpenFolderBtn({ fileSource, localFolder, dropboxPath }) {
   if (fileSource === 'dropbox' && dropboxPath) {
-    const url = `https://www.dropbox.com/home${dropboxPath}`
     return (
       <button className="btn btn-outline" style={{ width: '100%' }}
-        onClick={() => window.electronAPI
-          ? window.electronAPI.openExternal(url)
-          : window.open(url, '_blank')
-        }>
+        onClick={() => openDropboxFolder(dropboxPath)}>
         Open in Dropbox
       </button>
     )
@@ -25,7 +35,7 @@ function OpenFolderBtn({ fileSource, localFolder, dropboxPath }) {
   return null
 }
 
-export default function Done({ stats, mode, fileSource, localFolder, dropboxPath, onRestart }) {
+export default function Done({ stats, mode, fileSource, localFolder, dropboxPath, onContinue, onRestart }) {
   const folderBtn = <OpenFolderBtn fileSource={fileSource} localFolder={localFolder} dropboxPath={dropboxPath} />
 
   if (mode === 'rate') {
@@ -38,8 +48,11 @@ export default function Done({ stats, mode, fileSource, localFolder, dropboxPath
         <div className="done-divider" />
         <div className="done-actions">
           {folderBtn}
-          <button className="btn btn-primary" style={{ width: '100%' }} onClick={onRestart}>
+          <button className="btn btn-primary" style={{ width: '100%' }} onClick={onContinue}>
             Rate more files
+          </button>
+          <button className="btn btn-outline" style={{ width: '100%' }} onClick={onRestart}>
+            Change folder
           </button>
         </div>
       </div>
@@ -70,8 +83,11 @@ export default function Done({ stats, mode, fileSource, localFolder, dropboxPath
 
       <div className="done-actions">
         {folderBtn}
-        <button className="btn btn-primary" style={{ width: '100%' }} onClick={onRestart}>
+        <button className="btn btn-primary" style={{ width: '100%' }} onClick={onContinue}>
           Sort more files
+        </button>
+        <button className="btn btn-outline" style={{ width: '100%' }} onClick={onRestart}>
+          Change folder
         </button>
       </div>
     </div>

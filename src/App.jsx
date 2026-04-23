@@ -23,12 +23,6 @@ export default function App() {
     }
   }, [])
 
-  function handleFiles(loadedFiles, handle) {
-    setFiles(loadedFiles)
-    setDirHandle(handle)
-    setScreen('mode-select')  // after location, pick mode
-  }
-
   function handleModeSelect(m) {
     setMode(m)
     setScreen(m)  // 'sort' | 'rate'
@@ -43,6 +37,25 @@ export default function App() {
     setScreen('pick')
     setFiles([])
     setDirHandle(null)
+  }
+
+  // "Sort/Rate more files" — go back to the same folder, keeping mode
+  function handleContinue() {
+    setFiles([])
+    setStats({})
+    if (dirHandle?._dropboxPath !== undefined) {
+      setScreen('dropbox-pick')   // DropboxPicker reopens at same dropboxPath
+    } else {
+      setScreen('pick')           // Local: re-pick folder
+    }
+    // mode stays set — handleFiles will skip mode-select and go directly to sort/rate
+  }
+
+  function handleFiles(loadedFiles, handle) {
+    setFiles(loadedFiles)
+    setDirHandle(handle)
+    // If mode already set (continuing), skip mode-select
+    setScreen(mode || 'mode-select')
   }
 
   function handleRestart() {
@@ -67,6 +80,7 @@ export default function App() {
 
   if (screen === 'dropbox-pick') return (
     <DropboxPicker
+      initialPath={dropboxPath}
       onFiles={handleFiles}
       onBack={() => setScreen('pick')}
     />
@@ -106,6 +120,7 @@ export default function App() {
       fileSource={fileSource}
       localFolder={localFolder}
       dropboxPath={dropboxPath}
+      onContinue={handleContinue}
       onRestart={handleRestart}
     />
   )

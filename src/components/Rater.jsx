@@ -39,21 +39,27 @@ export default function Rater({ files, fileSource = 'local', onDone, onExit }) {
     }
   }, [])
 
-  // Preload all URLs upfront
+  async function fetchURL(f) {
+    try {
+      const url = fileSource === 'dropbox' ? await getTempLink(f.handle.path) : await getFileURL(f.handle)
+      if (f.type === 'image' && url) new Image().src = url
+      return url
+    } catch { return null }
+  }
+
+  // Local: load all upfront (createObjectURL is instant). Dropbox: sliding 10-ahead window.
+  const preloadKey = fileSource === 'dropbox' ? fileKey(queue[0]) : ''
   useEffect(() => {
-    files.forEach(async f => {
+    const toLoad = fileSource === 'dropbox' ? queue.slice(0, 10) : files
+    toLoad.forEach(async f => {
       const key = fileKey(f)
       if (urlCache.current[key] || loadingRef.current[key]) return
       loadingRef.current[key] = true
-      try {
-        const url = fileSource === 'dropbox' ? await getTempLink(f.handle.path) : await getFileURL(f.handle)
-        delete loadingRef.current[key]
-        urlCache.current[key] = url
-        if (f.type === 'image') new Image().src = url
-        tick(n => n + 1)
-      } catch { delete loadingRef.current[key] }
+      const url = await fetchURL(f)
+      delete loadingRef.current[key]
+      if (url) { urlCache.current[key] = url; tick(n => n + 1) }
     })
-  }, [fileSource]) // eslint-disable-line
+  }, [fileSource === 'local' ? null : preloadKey]) // eslint-disable-line
 
   useEffect(() => { setVideoError(false) }, [fileKey(queue[0])])
 

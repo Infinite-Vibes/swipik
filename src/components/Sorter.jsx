@@ -83,11 +83,11 @@ export default function Sorter({ files, mode, dirHandle, dropboxPath, onDone, on
     })
   }, []) // eslint-disable-line
 
-  // Dropbox: preload 5 ahead as queue advances
-  const preloadKey = mode === 'dropbox' ? queue.slice(0, 3).map(fileKey).join('|') : ''
+  // Dropbox: preload 10 ahead, re-triggered on every swipe
+  const preloadKey = mode === 'dropbox' ? fileKey(queue[0]) : ''
   useEffect(() => {
     if (mode !== 'dropbox') return
-    queue.slice(0, 5).forEach(f => {
+    queue.slice(0, 10).forEach(f => {
       const key = fileKey(f)
       if (urlCache.current[key] || loadingRef.current[key]) return
       loadingRef.current[key] = true
