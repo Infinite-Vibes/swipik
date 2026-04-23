@@ -8,8 +8,8 @@ import Done           from './components/Done.jsx'
 import { handleCallback, isAuthed } from './lib/dropbox.js'
 
 export default function App() {
-  const [screen,    setScreen]    = useState('start')
-  const [mode,      setMode]      = useState(null)    // 'sort' | 'rate'
+  const [screen,    setScreen]    = useState('pick')       // start by picking location
+  const [mode,      setMode]      = useState(null)         // 'sort' | 'rate'
   const [files,     setFiles]     = useState([])
   const [dirHandle, setDirHandle] = useState(null)
   const [stats,     setStats]     = useState({})
@@ -23,15 +23,15 @@ export default function App() {
     }
   }, [])
 
-  function handleModeSelect(m) {
-    setMode(m)
-    setScreen('pick')
-  }
-
   function handleFiles(loadedFiles, handle) {
     setFiles(loadedFiles)
     setDirHandle(handle)
-    setScreen(mode)   // 'sort' | 'rate'
+    setScreen('mode-select')  // after location, pick mode
+  }
+
+  function handleModeSelect(m) {
+    setMode(m)
+    setScreen(m)  // 'sort' | 'rate'
   }
 
   function handleDone(finalStats) {
@@ -46,7 +46,7 @@ export default function App() {
   }
 
   function handleRestart() {
-    setScreen('start')
+    setScreen('pick')
     setMode(null)
     setFiles([])
     setDirHandle(null)
@@ -58,13 +58,10 @@ export default function App() {
   const dropboxPath   = dirHandle?._dropboxPath ?? null
   const localFolder   = dirHandle?._electronFolder ?? null
 
-  if (screen === 'start')       return <ModeSelect onSelect={handleModeSelect} />
-
   if (screen === 'pick')        return (
     <FolderPicker
       onFiles={handleFiles}
       onDropbox={() => setScreen('dropbox-pick')}
-      onBack={() => setScreen('start')}
     />
   )
 
@@ -72,6 +69,13 @@ export default function App() {
     <DropboxPicker
       onFiles={handleFiles}
       onBack={() => setScreen('pick')}
+    />
+  )
+
+  if (screen === 'mode-select') return (
+    <ModeSelect
+      onSelect={handleModeSelect}
+      onBack={handleExit}
     />
   )
 

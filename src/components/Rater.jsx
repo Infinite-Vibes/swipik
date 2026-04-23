@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getFileURL, renameLocalFile } from '../lib/localFs.js'
-import { renameFile as dropboxRename } from '../lib/dropbox.js'
+import { getTempLink, renameFile as dropboxRename } from '../lib/dropbox.js'
 
 const COLORS = ['#FF3B4A', '#FF7A00', '#FFB800', '#84cc16', '#3DDC7A']
 const FLASH_MS = 160
@@ -46,14 +46,14 @@ export default function Rater({ files, fileSource = 'local', onDone, onExit }) {
       if (urlCache.current[key] || loadingRef.current[key]) return
       loadingRef.current[key] = true
       try {
-        const url = await getFileURL(f.handle)
+        const url = fileSource === 'dropbox' ? await getTempLink(f.handle.path) : await getFileURL(f.handle)
         delete loadingRef.current[key]
         urlCache.current[key] = url
         if (f.type === 'image') new Image().src = url
         tick(n => n + 1)
       } catch { delete loadingRef.current[key] }
     })
-  }, []) // eslint-disable-line
+  }, [fileSource]) // eslint-disable-line
 
   useEffect(() => { setVideoError(false) }, [fileKey(queue[0])])
 

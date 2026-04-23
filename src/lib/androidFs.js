@@ -29,19 +29,24 @@ export async function pickFolderAndroid(path = 'DCIM/Camera') {
 
 export async function listMediaFilesAndroid(dirHandle) {
   const { _androidFolder: folder, _androidDirectory: directory } = dirHandle
-  const result = await Filesystem.readdir({ path: folder, directory })
-  const files = result.files
-    .filter(f => f.type === 'file' && isMedia(f.name))
-    .map(f => {
-      const nativePath = `${folder}/${f.name}`
-      return {
-        name:   f.name,
-        path:   nativePath,
-        type:   isVideo(f.name) ? 'video' : 'image',
-        handle: { name: f.name, path: nativePath, type: isVideo(f.name) ? 'video' : 'image' },
-      }
-    })
-  return files.sort((a, b) => a.name.localeCompare(b.name))
+  try {
+    const result = await Filesystem.readdir({ path: folder, directory })
+    const files = result.files
+      .filter(f => f.type === 'file' && isMedia(f.name))
+      .map(f => {
+        const nativePath = `${folder}/${f.name}`
+        return {
+          name:   f.name,
+          path:   nativePath,
+          type:   isVideo(f.name) ? 'video' : 'image',
+          handle: { name: f.name, path: nativePath, type: isVideo(f.name) ? 'video' : 'image' },
+        }
+      })
+    return files.sort((a, b) => a.name.localeCompare(b.name))
+  } catch (e) {
+    console.error(`Failed to list files in ${folder}:`, e.message)
+    throw new Error(`Could not access ${folder}. Check permissions or try a different folder.`)
+  }
 }
 
 /**

@@ -1,4 +1,4 @@
-export default function ModeSelect({ onSelect }) {
+export default function ModeSelect({ onSelect, onBack }) {
   return (
     <div className="mode-screen">
       <h1 className="logo">Swip<span>ik</span></h1>
@@ -12,6 +12,9 @@ export default function ModeSelect({ onSelect }) {
           <span className="mode-card-label">Rate</span>
         </button>
       </div>
+      {onBack && (
+        <button className="btn btn-outline" onClick={onBack} style={{ marginTop: 16 }}>← Back</button>
+      )}
     </div>
   )
 }

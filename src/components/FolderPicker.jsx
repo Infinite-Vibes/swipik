@@ -12,7 +12,7 @@ const ANDROID_PATHS = [
   { label: 'WhatsApp Images', path: 'WhatsApp/Media/WhatsApp Images' },
 ]
 
-export default function FolderPicker({ onFiles, onDropbox, onBack }) {
+export default function FolderPicker({ onFiles, onDropbox }) {
   const [status, setStatus]     = useState('idle')
   const [error, setError]       = useState('')
   const [showPaths, setShowPaths] = useState(false)
@@ -61,7 +61,6 @@ export default function FolderPicker({ onFiles, onDropbox, onBack }) {
             : <button className="btn btn-secondary" onClick={() => pick()}
                 style={{ width: '100%', maxWidth: 320 }}>Try again</button>
           }
-          <button className="btn btn-outline" onClick={onBack} style={{ width: '100%', maxWidth: 320 }}>← Back</button>
         </>
       )}
 
@@ -76,7 +75,6 @@ export default function FolderPicker({ onFiles, onDropbox, onBack }) {
             {showDropbox && (
               <button className="btn btn-primary" onClick={onDropbox}>Browse Dropbox</button>
             )}
-            <button className="btn btn-outline" onClick={onBack}>← Back</button>
           </div>
         </>
       )}
