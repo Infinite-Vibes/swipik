@@ -120,9 +120,9 @@ export default function DropboxPicker({ onFiles, onBack, initialPath }) {
       {/* Header row */}
       <div className="dbx-header">
         <div className="dbx-breadcrumb">
-          {stack.length > 1 && (
-            <button className="dbx-back" onClick={navigateBack}>←</button>
-          )}
+          <button className="dbx-back" onClick={stack.length > 1 ? navigateBack : onBack}>
+            ←
+          </button>
           <span className="dbx-path">{displayPath}</span>
         </div>
         <button className="dbx-disconnect" onClick={() => { logout(); setAuthed(false) }}>
@@ -162,10 +162,6 @@ export default function DropboxPicker({ onFiles, onBack, initialPath }) {
           Use this folder ({mediaFiles.length} files)
         </button>
       )}
-      <button className="btn btn-outline" onClick={onBack}
-        style={{ width: '100%', maxWidth: 480 }}>
-        ← Back
-      </button>
     </div>
   )
 }
