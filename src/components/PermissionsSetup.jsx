@@ -48,13 +48,13 @@ export default function PermissionsSetup({ onComplete }) {
 
   return (
     <div className="screen" style={{ gap: 16 }}>
-      <h1 className="logo">Swip<span>ik</span></h1>
+      <h1 className="logo">Swyp<span>ik</span></h1>
 
       <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 12 }}>
         <p style={{ fontSize: '3rem', marginBottom: 16 }}>📁</p>
         <p className="mode-subtitle">Files & Media Access</p>
         <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: 1.5 }}>
-          Swipik needs permission to access your photos and videos.
+          Swypik needs permission to access your photos and videos.
         </p>
 
         {hasStoragePermission ? (
@@ -65,7 +65,7 @@ export default function PermissionsSetup({ onComplete }) {
               Grant Permission
             </button>
             <button className="btn btn-secondary" onClick={openSettings} style={{ width: '100%', fontSize: '0.85rem' }}>
-              Settings → Apps → Swipik → Permissions
+              Settings → Apps → Swypik → Permissions
             </button>
           </div>
         )}

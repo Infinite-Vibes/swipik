@@ -98,7 +98,7 @@ export default function DropboxPicker({ onFiles, onBack, initialPath }) {
   if (!authed) {
     return (
       <div className="screen">
-        <h1 className="logo">Swip<span>ik</span></h1>
+        <h1 className="logo">Swyp<span>ik</span></h1>
         <p className="mode-subtitle">Connect your Dropbox to browse and sort files in the cloud.</p>
         {error && <p className="error-msg">{error}</p>}
         <button className="btn btn-primary" onClick={handleConnect} disabled={connecting}

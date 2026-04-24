@@ -61,10 +61,10 @@ export async function listMediaFilesAndroid(dirHandle) {
     return files.sort((a, b) => a.name.localeCompare(b.name))
   } catch (e) {
     if (e.message === 'PERMISSION_DENIED') {
-      throw new Error('Storage permission denied.\n\nGo to: Settings → Apps → Swipik → Permissions → Files and media → Allow.')
+      throw new Error('Storage permission denied.\n\nGo to: Settings → Apps → Swypik → Permissions → Files and media → Allow.')
     }
     console.error(`readdir failed for ${folder}:`, e.message)
-    throw new Error(`Could not read "${folder}" (${e.message}).\n\nTry: Settings → Apps → Swipik → Permissions → allow storage access, then try again.`)
+    throw new Error(`Could not read "${folder}" (${e.message}).\n\nTry: Settings → Apps → Swypik → Permissions → allow storage access, then try again.`)
   }
 }
 

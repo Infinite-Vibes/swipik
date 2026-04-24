@@ -1,5 +1,5 @@
 {
-  "name": "swipik",
+  "name": "swypik",
   "version": "0.1.0",
   "type": "module",
   "main": "electron/main.cjs",
@@ -23,7 +23,6 @@
     "@capacitor/filesystem": "^7.1.8",
     "@capacitor/share": "^7.0.4",
     "@fontsource/syne": "^5.2.7",
-    "ffmpeg-static": "^5.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -37,17 +36,13 @@
   },
   "build": {
     "appId": "com.swipik.app",
-    "productName": "Swipik",
+    "productName": "Swypik",
     "directories": {
       "output": "release"
     },
     "files": [
       "dist/**",
-      "electron/**",
-      "node_modules/ffmpeg-static/**"
-    ],
-    "asarUnpack": [
-      "node_modules/ffmpeg-static/**"
+      "electron/**"
     ],
     "win": {
       "target": [

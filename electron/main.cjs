@@ -20,11 +20,12 @@ app.on('open-url', (event, url) => {
   if (win) win.webContents.send('auth-callback', url)
 })
 
-// ffmpeg binary — unpacked from asar in packaged builds
-let ffmpegBin
+// ffmpeg binary — use system-installed ffmpeg
+const { execFileSync } = require('child_process')
+let ffmpegBin = null
 try {
-  ffmpegBin = require('ffmpeg-static')
-  if (app.isPackaged) ffmpegBin = ffmpegBin.replace('app.asar', 'app.asar.unpacked')
+  const cmd = process.platform === 'win32' ? 'where' : 'which'
+  ffmpegBin = execFileSync(cmd, ['ffmpeg'], { encoding: 'utf8' }).trim().split('\n')[0].trim()
 } catch {}
 
 // Transcode queue — max 2 concurrent ffmpeg jobs
@@ -35,7 +36,7 @@ const pending = []
 
 function runFfmpeg(filePath) {
   return new Promise((resolve, reject) => {
-    const tmp = path.join(os.tmpdir(), `swipik_${Date.now()}_${Math.random().toString(36).slice(2)}.mp4`)
+    const tmp = path.join(os.tmpdir(), `swypik_${Date.now()}_${Math.random().toString(36).slice(2)}.mp4`)
     const proc = spawn(ffmpegBin, [
       '-i', filePath,
       '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
@@ -180,7 +181,7 @@ function createWindow() {
     height: 760,
     minWidth: 400,
     minHeight: 500,
-    title: 'Swipik',
+    title: 'Swypik',
     backgroundColor: '#0a0a0f',
     autoHideMenuBar: true,
     webPreferences: {
@@ -197,13 +198,13 @@ function createWindow() {
 
   if (!app.isPackaged) {
     const tryLoad = (retries) => {
-      win.loadURL('http://localhost:5299/swipik.html').catch(() => {
+      win.loadURL('http://localhost:5299/swypik.html').catch(() => {
         if (retries > 0) setTimeout(() => tryLoad(retries - 1), 500)
       })
     }
     tryLoad(30)
   } else {
-    win.loadFile(path.join(__dirname, '../dist/swipik.html'))
+    win.loadFile(path.join(__dirname, '../dist/swypik.html'))
   }
 }
 

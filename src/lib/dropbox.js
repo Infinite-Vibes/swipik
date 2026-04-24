@@ -17,7 +17,7 @@ async function generateChallenge(verifier) {
 function redirectUri() {
   // Custom URL scheme takes priority on native platforms regardless of EXPLICIT_REDIRECT
   if (window.electronAPI || window.Capacitor?.getPlatform() === 'android') return 'com.swipik.app://auth'
-  return EXPLICIT_REDIRECT || 'http://localhost:5299/swipik.html'
+  return EXPLICIT_REDIRECT || 'http://localhost:5299/swypik.html'
 }
 
 export const hasAppKey = () => !!APP_KEY

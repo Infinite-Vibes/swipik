@@ -1,7 +1,7 @@
 export default function ModeSelect({ onSelect, onBack }) {
   return (
     <div className="mode-screen">
-      <h1 className="logo">Swip<span>ik</span></h1>
+      <h1 className="logo">Swyp<span>ik</span></h1>
       <div className="mode-grid">
         <button className="mode-card" onClick={() => onSelect('sort')}>
           <span className="mode-card-icon">⇄</span>

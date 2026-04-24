@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.swipik.app',
-  appName: 'Swipik',
+  appName: 'Swypik',
   webDir: 'dist',
   // In dev: use live Vite server instead of bundled build
   server: process.env.CAP_DEV

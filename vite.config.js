@@ -7,7 +7,7 @@ export default defineConfig({
   server: { port: 5299, strictPort: true },
   build: {
     rollupOptions: {
-      input: 'swipik.html',
+      input: 'swypik.html',
     },
   },
 })

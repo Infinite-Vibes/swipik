@@ -43,7 +43,7 @@ export default function FolderPicker({ onFiles, onDropbox }) {
 
   return (
     <div className="screen">
-      <h1 className="logo">Swip<span>ik</span></h1>
+      <h1 className="logo">Swyp<span>ik</span></h1>
 
       {status === 'loading' && (
         <>
