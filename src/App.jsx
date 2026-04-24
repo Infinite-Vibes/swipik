@@ -5,7 +5,22 @@ import DropboxPicker  from './components/DropboxPicker.jsx'
 import Sorter         from './components/Sorter.jsx'
 import Rater          from './components/Rater.jsx'
 import Done           from './components/Done.jsx'
+import PermissionsSetup from './components/PermissionsSetup.jsx'
 import { handleCallback, isAuthed } from './lib/dropbox.js'
+
+const isAndroid = window.Capacitor?.getPlatform() === 'android'
+
+// Android back button handling
+const setupBackButton = (onBack) => {
+  try {
+    const { App } = window.Capacitor
+    if (App) {
+      App.addListener('backButton', () => {
+        onBack?.()
+      })
+    }
+  } catch {}
+}
 
 export default function App() {
   const [screen,    setScreen]    = useState('pick')       // start by picking location
@@ -13,6 +28,11 @@ export default function App() {
   const [files,     setFiles]     = useState([])
   const [dirHandle, setDirHandle] = useState(null)
   const [stats,     setStats]     = useState({})
+  const [setupComplete, setSetupComplete] = useState(() => {
+    // Check localStorage for setup completion flag
+    if (!isAndroid) return true // Desktop doesn't need setup
+    return localStorage.getItem('swipik-setup-complete') === 'true'
+  })
 
   // Browser-mode Dropbox OAuth callback: ?code= on page load
   useEffect(() => {
@@ -22,6 +42,21 @@ export default function App() {
       })
     }
   }, [])
+
+  // Android hardware back button handling
+  useEffect(() => {
+    const handleBackPress = () => {
+      if (screen === 'sort' || screen === 'rate' || screen === 'done') {
+        handleExit()
+      } else if (screen === 'mode-select') {
+        handleBackFromModeSelect()
+      } else if (screen === 'dropbox-pick') {
+        setScreen('pick')
+      }
+      // From 'pick': do nothing (stay on main screen)
+    }
+    setupBackButton(handleBackPress)
+  }, [screen])
 
   function handleModeSelect(m) {
     setMode(m)
@@ -34,7 +69,16 @@ export default function App() {
   }
 
   function handleExit() {
-    setScreen('mode-select')  // back one level — keeps files loaded so you can switch modes
+    setScreen('mode-select')  // back from sort/rate to mode selection
+  }
+
+  function handleBackFromModeSelect() {
+    // Back from mode selection returns to folder picker, keeping folder choice
+    if (dirHandle?._dropboxPath !== undefined) {
+      setScreen('dropbox-pick')
+    } else {
+      setScreen('pick')
+    }
   }
 
   // "Sort/Rate more files" — go back to the same folder, keeping mode
@@ -64,10 +108,20 @@ export default function App() {
     setStats({})
   }
 
+  function handleSetupComplete() {
+    localStorage.setItem('swipik-setup-complete', 'true')
+    setSetupComplete(true)
+  }
+
   // Derive file source from dirHandle shape
   const fileSource    = dirHandle?._dropboxPath !== undefined ? 'dropbox' : 'local'
   const dropboxPath   = dirHandle?._dropboxPath ?? null
   const localFolder   = dirHandle?._electronFolder ?? null
+
+  // Show permissions setup on first Android launch
+  if (isAndroid && !setupComplete) {
+    return <PermissionsSetup onComplete={handleSetupComplete} />
+  }
 
   if (screen === 'pick')        return (
     <FolderPicker
@@ -87,7 +141,7 @@ export default function App() {
   if (screen === 'mode-select') return (
     <ModeSelect
       onSelect={handleModeSelect}
-      onBack={handleExit}
+      onBack={handleBackFromModeSelect}
     />
   )
 

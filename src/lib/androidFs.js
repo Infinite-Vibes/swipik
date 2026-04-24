@@ -96,8 +96,21 @@ export async function moveToSubfolderAndroid(dirHandle, fileName, fileHandle, su
     })
   } catch { /* already exists */ }
 
-  await Filesystem.copy({ from: srcPath, to: destPath, toDirectory: directory, directory })
-  await Filesystem.deleteFile({ path: srcPath, directory })
+  // Copy with correct Capacitor Filesystem API: specify both from and to directories
+  await Filesystem.copy({
+    from: srcPath,
+    fromDirectory: directory,
+    to: destPath,
+    toDirectory: directory,
+  })
+
+  // Delete the original file
+  try {
+    await Filesystem.deleteFile({ path: srcPath, directory })
+  } catch (e) {
+    console.error('Failed to delete source file after move:', e.message)
+    throw new Error(`File moved but couldn't delete original (${e.message})`)
+  }
 }
 
 /**
