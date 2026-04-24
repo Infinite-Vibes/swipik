@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # silence Node.js 20 deprecation warning
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-windows:
@@ -32,32 +32,9 @@ jobs:
           path: release/*.exe
           retention-days: 30
 
-  # Intel (x64) runner — builds natively for x64, avoids cross-compile issues with ffmpeg-static
-  build-macos-x64:
-    runs-on: macos-13
-    env:
-      CSC_IDENTITY_AUTO_DISCOVERY: false   # skip code-signing (no certificate in CI)
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
-      - name: Write .env
-        run: echo "VITE_DROPBOX_APP_KEY=${{ secrets.VITE_DROPBOX_APP_KEY }}" > .env
-      - name: Vite build
-        run: npm run build
-      - name: Electron build (x64)
-        run: npx electron-builder --mac --x64 --publish never
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Swipik-macOS-x64
-          path: release/*.dmg
-          retention-days: 30
-
-  # Apple Silicon (arm64) runner — builds natively for arm64
-  build-macos-arm64:
+  # macos-13 (Intel) was deprecated in early 2025 — only ARM runners remain.
+  # arm64 binaries run natively on M-series Macs and transparently via Rosetta 2 on Intel.
+  build-macos:
     runs-on: macos-latest
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: false
@@ -76,6 +53,6 @@ jobs:
         run: npx electron-builder --mac --arm64 --publish never
       - uses: actions/upload-artifact@v4
         with:
-          name: Swipik-macOS-arm64
+          name: Swipik-macOS
           path: release/*.dmg
           retention-days: 30

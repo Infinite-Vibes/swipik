@@ -28,11 +28,17 @@ export async function pickFolderAndroid(path = 'DCIM/Camera') {
 }
 
 async function ensureStoragePermission() {
-  const status = await Filesystem.checkPermissions()
-  if (status.publicStorage === 'granted') return
-  const result = await Filesystem.requestPermissions()
-  if (result.publicStorage !== 'granted') {
-    throw new Error('Storage permission denied. Please allow storage access in your phone Settings and try again.')
+  try {
+    const status = await Filesystem.checkPermissions()
+    if (status.publicStorage === 'granted') return
+    const result = await Filesystem.requestPermissions()
+    if (result.publicStorage !== 'granted') {
+      throw new Error('PERMISSION_DENIED')
+    }
+  } catch (e) {
+    if (e.message === 'PERMISSION_DENIED') throw e
+    // On some Android 11+ devices Capacitor's permission API throws — proceed anyway
+    // and let the readdir call report the real error if access truly fails
   }
 }
 
@@ -54,8 +60,11 @@ export async function listMediaFilesAndroid(dirHandle) {
       })
     return files.sort((a, b) => a.name.localeCompare(b.name))
   } catch (e) {
-    console.error(`Failed to list files in ${folder}:`, e.message)
-    throw new Error(`Could not access "${folder}". Try a different folder or use Dropbox.`)
+    if (e.message === 'PERMISSION_DENIED') {
+      throw new Error('Storage permission denied.\n\nGo to: Settings → Apps → Swipik → Permissions → Files and media → Allow.')
+    }
+    console.error(`readdir failed for ${folder}:`, e.message)
+    throw new Error(`Could not read "${folder}" (${e.message}).\n\nTry: Settings → Apps → Swipik → Permissions → allow storage access, then try again.`)
   }
 }
 

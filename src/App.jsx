@@ -34,9 +34,7 @@ export default function App() {
   }
 
   function handleExit() {
-    setScreen('pick')
-    setFiles([])
-    setDirHandle(null)
+    setScreen('mode-select')  // back one level — keeps files loaded so you can switch modes
   }
 
   // "Sort/Rate more files" — go back to the same folder, keeping mode

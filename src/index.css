@@ -577,6 +577,19 @@ body::after {
 .done-stat:first-child { border-radius: var(--radius) 0 0 var(--radius); }
 .done-stat:last-child  { border-radius: 0 var(--radius) var(--radius) 0; }
 
+.done-stat-link {
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, transform 0.1s;
+}
+.done-stat-link:hover  { background: var(--surface2); border-color: var(--border-mid); }
+.done-stat-link:active { transform: scale(0.96); }
+
+.done-stat-arrow {
+  font-size: 0.75rem;
+  color: var(--text-dimmer);
+  margin-top: 2px;
+}
+
 .done-stat-num {
   font-size: 2rem;
   font-weight: 800;
