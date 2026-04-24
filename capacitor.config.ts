@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   // In dev: use live Vite server instead of bundled build
   server: process.env.CAP_DEV
-    ? { url: 'http://YOUR_MACHINE_IP:5299/swipik.html', cleartext: true }
+    ? { url: 'http://YOUR_MACHINE_IP:5299/swypik.html', cleartext: true }
     : undefined,
   plugins: {
     // Filesystem plugin — no extra config needed but declared here for docs
