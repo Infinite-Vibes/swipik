@@ -9,6 +9,11 @@ import { initTauriShim } from './lib/tauriShim.js'
 
 // When running inside Tauri, install the window.electronAPI shim before React
 // mounts so components can detect it synchronously via `!!window.electronAPI`.
-await initTauriShim()
-
-createRoot(document.getElementById('root')).render(<App />)
+// Wrapped in an async function instead of top-level await so vite's default
+// build target (es2020) doesn't reject the chunk.
+async function bootstrap() {
+  try { await initTauriShim() }
+  catch (err) { console.warn('Tauri shim init failed:', err) }
+  createRoot(document.getElementById('root')).render(<App />)
+}
+bootstrap()
