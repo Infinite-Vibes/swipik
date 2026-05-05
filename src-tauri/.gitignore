@@ -3,3 +3,6 @@ target/
 
 # Generated code from tauri-build
 gen/schemas/
+
+# Local cargo overrides (target-dir redirect for Dropbox/OneDrive users)
+.cargo/
