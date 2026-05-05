@@ -1,6 +1,8 @@
 // ── Platform detection ──────────────────────────────────────────────────────
-const IS_ELECTRON = () => !!window.electronAPI
-const IS_ANDROID  = () => window.Capacitor?.getPlatform() === 'android'
+// `window.electronAPI` is now installed by the Tauri shim (src/lib/tauriShim.js);
+// the name is preserved so individual components don't need touching.
+const HAS_DESKTOP_API = () => !!window.electronAPI
+const IS_ANDROID      = () => window.Capacitor?.getPlatform() === 'android'
 
 // ── Shared helpers ──────────────────────────────────────────────────────────
 const IMAGE_EXTS = new Set(['jpg','jpeg','png','gif','webp','heic','heif','avif','bmp','tiff','tif'])
@@ -17,12 +19,12 @@ export function isVideo(name) {
 }
 
 export function isLocalSupported() {
-  return IS_ELECTRON() || IS_ANDROID() || 'showDirectoryPicker' in window
+  return HAS_DESKTOP_API() || IS_ANDROID() || 'showDirectoryPicker' in window
 }
 
 // ── pickFolder ──────────────────────────────────────────────────────────────
 export async function pickFolder(androidPath) {
-  if (IS_ELECTRON()) {
+  if (HAS_DESKTOP_API()) {
     const folderPath = await window.electronAPI.pickFolder()
     if (!folderPath) throw Object.assign(new Error('Cancelled'), { name: 'AbortError' })
     return { _electronFolder: folderPath }
@@ -63,12 +65,11 @@ export async function listMediaFiles(dirHandle) {
 
 // ── getFileURL ──────────────────────────────────────────────────────────────
 export async function getFileURL(fileHandle) {
-  // Electron: fileHandle is { name, path, type }
-  if (fileHandle.path && IS_ELECTRON()) {
-    if (isVideo(fileHandle.name)) {
-      return window.electronAPI.getVideoUrl(fileHandle.path)
-    }
-    return `media:///${fileHandle.path.replace(/\\/g, '/')}`
+  // Desktop (Tauri): fileHandle is { name, path, type }. convertFileSrc gives a
+  // webview-loadable URL (asset:// on most platforms, https://asset.localhost on
+  // Windows) that works for both images and videos.
+  if (fileHandle.path && HAS_DESKTOP_API()) {
+    return window.electronAPI.getVideoUrl(fileHandle.path)
   }
 
   // Android: convert native path to Capacitor WebView URL
@@ -87,7 +88,7 @@ export async function getFileURL(fileHandle) {
 
 // ── moveToSubfolder ─────────────────────────────────────────────────────────
 export async function moveToSubfolder(dirHandle, fileName, fileHandle, subdir) {
-  if (fileHandle.path && IS_ELECTRON()) {
+  if (fileHandle.path && HAS_DESKTOP_API()) {
     await window.electronAPI.moveFile(fileHandle.path, dirHandle._electronFolder, subdir, fileName)
     return
   }
@@ -116,5 +117,5 @@ export async function renameLocalFile(filePath, newName) {
     await renameFileAndroid(filePath, newName)
     return
   }
-  // Electron handled directly in Rater.jsx via window.electronAPI
+  // Desktop is handled directly in Rater.jsx via window.electronAPI.renameFile
 }

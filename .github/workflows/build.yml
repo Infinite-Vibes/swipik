@@ -9,50 +9,53 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
-      - name: Write .env
-        run: echo "VITE_DROPBOX_APP_KEY=${{ secrets.VITE_DROPBOX_APP_KEY }}" > .env
-        shell: bash
-      - name: Vite build
-        run: npm run build
-        shell: bash
-      - name: Electron build
-        run: npx electron-builder --win --publish never
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Swipik-Windows
-          path: release/*.exe
-          retention-days: 30
+  build-tauri:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: Swypik-Windows
+            bundle_glob: |
+              src-tauri/target/release/bundle/nsis/*.exe
+              src-tauri/target/release/bundle/msi/*.msi
+          - os: macos-latest
+            artifact: Swypik-macOS
+            # macos-latest is ARM; arm64 binaries run natively on M-series and
+            # transparently via Rosetta 2 on Intel.
+            bundle_glob: |
+              src-tauri/target/release/bundle/dmg/*.dmg
 
-  # macos-13 (Intel) was deprecated in early 2025 — only ARM runners remain.
-  # arm64 binaries run natively on M-series Macs and transparently via Rosetta 2 on Intel.
-  build-macos:
-    runs-on: macos-latest
-    env:
-      CSC_IDENTITY_AUTO_DISCOVERY: false
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install npm dependencies
+        run: npm ci
+
       - name: Write .env
         run: echo "VITE_DROPBOX_APP_KEY=${{ secrets.VITE_DROPBOX_APP_KEY }}" > .env
-      - name: Vite build
-        run: npm run build
-      - name: Electron build (arm64)
-        run: npx electron-builder --mac --arm64 --publish never
+        shell: bash
+
+      - name: Tauri build
+        run: npx tauri build
+
       - uses: actions/upload-artifact@v4
         with:
-          name: Swipik-macOS
-          path: release/*.dmg
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.bundle_glob }}
           retention-days: 30
+          if-no-files-found: error

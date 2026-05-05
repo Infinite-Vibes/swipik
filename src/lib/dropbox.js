@@ -49,9 +49,13 @@ export async function startDropboxAuth() {
   const authUrl = `https://www.dropbox.com/oauth2/authorize?${params}`
 
   if (window.electronAPI) {
-    // Electron: open system browser, wait for OS to route com.swipik.app://auth back
+    // Desktop (Tauri): open system browser, wait for OS to route com.swipik.app://auth back
     await new Promise((resolve, reject) => {
-      window.electronAPI.onAuthCallback(async (url) => {
+      let done = false
+      const unlistenPromise = window.electronAPI.onAuthCallback(async (url) => {
+        if (done) return
+        done = true
+        unlistenPromise?.then?.(fn => fn?.())
         const code  = new URL(url).searchParams.get('code')
         const error = new URL(url).searchParams.get('error')
         if (error) { reject(Object.assign(new Error(`Dropbox: ${error}`), { name: 'AbortError' })); return }

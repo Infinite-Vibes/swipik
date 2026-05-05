@@ -11,8 +11,8 @@
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
 import { Capacitor } from '@capacitor/core'
 
-const IMAGE_EXTS = new Set(['jpg','jpeg','png','gif','webp','heic','heif','avif','bmp'])
-const VIDEO_EXTS = new Set(['mp4','mov','avi','mkv','webm','m4v','3gp'])
+const IMAGE_EXTS = new Set(['jpg','jpeg','png','gif','webp','heic','heif','avif','bmp','tiff','tif'])
+const VIDEO_EXTS = new Set(['mp4','mov','avi','mkv','webm','m4v','3gp','wmv'])
 
 export const isMedia  = n => { const e = ext(n); return IMAGE_EXTS.has(e) || VIDEO_EXTS.has(e) }
 export const isVideo  = n => VIDEO_EXTS.has(ext(n))

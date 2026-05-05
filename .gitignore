@@ -5,6 +5,15 @@ node_modules/
 dist/
 release/
 
+# Tauri build outputs
+src-tauri/target/
+src-tauri/gen/
+
+# Icon source assets (generated icons live in src-tauri/icons/)
+*.psd
+swypikicon*.png
+FLUX2 Max*.jpeg
+
 # Android build outputs
 android/app/build/
 android/.gradle/
